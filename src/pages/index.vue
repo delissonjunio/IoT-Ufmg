@@ -32,6 +32,20 @@
         </div>
       </div>
     </div>
+
+    <div class="row q-mt-sm justify-center items-center">
+      <div class="col-12">
+        Tempo de leitura:
+        <q-slider
+          v-model="readTimeout"
+          :min="0"
+          :max="100"
+          :step="2"
+          label
+          snap
+        />
+      </div>
+    </div>
   </q-page>
 </template>
 
@@ -49,12 +63,15 @@ export default {
   data: () => ({
     mode: '',
     tags: [],
+    readTimeout: 1,
     passiveIntervalId: null
   }),
   methods: {
     generateRandomTagData: function () {
-      return 'xxxx-xxxx-xxxx-xxxx'.replace(/[xy]/g, (c) => {
-        let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8)
+      return '0.yy m | 1.yy ms | xxxx-xxxx-xxxx-xxxx'.replace(/[xy]/g, (c) => {
+        let r = Math.random() * 16 | 0
+        let t = Math.round(Math.random() * 9)
+        let v = c === 'x' ? r : t
         return v.toString(16).toUpperCase()
       })
     },
@@ -71,7 +88,7 @@ export default {
               type: 'positive'
             })
           }
-        }, (Math.random() * 500) + 500)
+        }, (Math.random() * 1000) + 1000)
       } else {
         if (this.passiveIntervalId) {
           clearInterval(this.passiveIntervalId)
