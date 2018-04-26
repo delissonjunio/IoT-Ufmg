@@ -1,6 +1,6 @@
 import * as net from 'net'
 
-const CONNECTION_TIMEOUT = 2000
+const CONNECTION_TIMEOUT = 5000
 
 export const connect = async ({ commit, dispatch, state }, { host, port }) => {
   commit('connectionData', {
@@ -49,16 +49,19 @@ export const refreshConnection = ({ commit, state }) => {
         })
 
         client.on('close', (hadError) => {
+          console.error('socket closed: ', hadError)
           clearTimeout(timeoutTimerId)
 
           reject(hadError)
         })
 
         timeoutTimerId = setTimeout(() => {
+          console.error('connect timeout')
           client.destroy()
           reject(CONNECTION_TIMEOUT)
         }, CONNECTION_TIMEOUT)
       } catch (e) {
+        console.error(e)
         clearTimeout(timeoutTimerId)
         reject(e)
       }

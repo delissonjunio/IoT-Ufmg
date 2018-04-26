@@ -37,19 +37,19 @@
           </q-item>
           <q-item>
             <q-item-side icon="av_timer">
-              Tempo de leitura
+              Leituras a efetuar
             </q-item-side>
             <q-item-main>
               <q-slider :value="configuration.readTimeout"
                         @change="val => { configuration.readTimeout = val }"
-                        :min="0" :max="100" label color="amber"></q-slider>
+                        :min="0" :max="10" label color="amber"></q-slider>
             </q-item-main>
           </q-item>
           <q-item-separator></q-item-separator>
           <q-list-header>Estatísticas</q-list-header>
           <q-item>
             <q-item-side>
-              Leituras por segundo
+              Leituras de sucesso por segundo
             </q-item-side>
             <q-item-main>
               -
@@ -125,7 +125,7 @@ export default {
     },
     configuration: {
       signalStrength: 50,
-      readTimeout: 10
+      readTimeout: 3
     },
     tagData: {
       tags: [
@@ -227,6 +227,7 @@ export default {
     },
 
     parseMessage: function (message) {
+      console.info('Mensagem recebida: ', message)
       if (message[0] === 'tag') {
         let [tag, discoverTime, lastSeen, antenna, readQty] = message.slice(-5)
         if (this.mode === 'active') {
@@ -293,7 +294,7 @@ export default {
             position: 'top',
             message: 'Nenhuma tag recebida do leitor'
           })
-        }, this.configuration.readTimeout * 100)
+        }, this.configuration.readTimeout * 1000)
       }
     }
   },
