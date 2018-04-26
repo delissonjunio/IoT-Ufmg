@@ -1,14 +1,24 @@
 
 export default [
   {
-    path: '/',
-    component: () => import('layouts/default'),
-    children: [
-      { path: '', component: () => import('pages/index') }
-    ]
+    path: '/dashboard',
+    name: 'dashboard',
+    props: (route) => ({ host: route.query.host, port: route.query.port }),
+    component: () => import('pages/dashboard')
   },
 
-  { // Always leave this as last one
+  {
+    path: '/setup',
+    name: 'setup',
+    component: () => import('pages/setupConnection')
+  },
+
+  {
+    path: '/',
+    redirect: '/setup'
+  },
+
+  {
     path: '*',
     component: () => import('pages/404')
   }

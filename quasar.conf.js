@@ -42,11 +42,8 @@ module.exports = function (ctx) {
       // port: 8080,
       open: true // opens browser window automatically
     },
-    // framework: 'all' --- includes everything; for dev only!
     framework: 'all',
-    // animations: 'all' --- includes all animations
-    animations: [
-    ],
+    animations: 'all',
     pwa: {
       cacheExt: 'js,html,css,ttf,eot,otf,woff,woff2,json,svg,gif,jpg,jpeg,png,wav,ogg,webm,flac,aac,mp4,mp3',
       manifest: {

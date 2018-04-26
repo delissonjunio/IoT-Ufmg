@@ -1,0 +1,134 @@
+<template>
+  <q-layout>
+    <q-page-container>
+      <q-page
+        padding
+        class="row justify-center">
+        <div class="col-xs-12 col-sm-8 col-md-6">
+          <q-list>
+            <q-item>
+              <q-item-main>
+                <q-item-tile>
+                  <div class="text-center full-width">
+                    <q-icon
+                      name="wifi"
+                      size="200pt"
+                      color="primary">
+                    </q-icon>
+                  </div>
+                  <div class="text-center full-width text-capitalize">
+                    Internet das Coisas - RFID
+                  </div>
+                </q-item-tile>
+              </q-item-main>
+            </q-item>
+            <q-list-header>Conexão</q-list-header>
+            <q-item>
+              <q-item-main>
+                <q-item-tile>
+                  <q-field helper="IP ou hostname, ex: '1.2.3.4' ou 'maquina1.local'">
+                    <q-input
+                      @keyup.enter="tryToConnect"
+                      v-model="connection.host"
+                      float-label="Endereço do servidor">
+                    </q-input>
+                  </q-field>
+                </q-item-tile>
+              </q-item-main>
+            </q-item>
+            <q-item>
+              <q-item-main>
+                <q-item-tile>
+                  <q-field :helper="`Padrão: ${DEFAULT_PORT}`">
+                    <q-input
+                      @keyup.enter="tryToConnect"
+                      v-model="connection.port"
+                      float-label="Porta a ser utilizada">
+                    </q-input>
+                  </q-field>
+                </q-item-tile>
+              </q-item-main>
+            </q-item>
+            <q-item>
+              <q-item-main>
+                <q-item-tile>
+                  <q-btn
+                    @click="tryToConnect"
+                    :loading="connection.state === CONNECTION_STATES.CONNECTING"
+                    class="full-width"
+                    type="submit"
+                    color="primary">
+                    Conectar
+                  </q-btn>
+                </q-item-tile>
+              </q-item-main>
+            </q-item>
+          </q-list>
+        </div>
+      </q-page>
+    </q-page-container>
+  </q-layout>
+</template>
+
+<script>
+import { mapActions } from 'vuex'
+
+const DEFAULT_PORT = 5678
+
+const CONNECTION_STATES = {
+  IDLE: 0,
+  CONNECTING: 1,
+  CONNECTED: 2,
+  ERROR: 3
+}
+
+export default {
+  data: () => ({
+    CONNECTION_STATES,
+    DEFAULT_PORT,
+    connection: {
+      host: '',
+      port: DEFAULT_PORT + '',
+      state: CONNECTION_STATES.IDLE
+    }
+  }),
+  methods: {
+    ...mapActions('connection', [
+      'connect'
+    ]),
+
+    tryToConnect: async function () {
+      this.connection.state = CONNECTION_STATES.CONNECTING
+      try {
+        await this.connect({ host: this.connection.host, port: this.connection.port })
+        this.connection.state = CONNECTION_STATES.CONNECTED
+      } catch (e) {
+        this.connection.state = CONNECTION_STATES.ERROR
+      }
+    }
+  },
+  watch: {
+    'connection.state': function (newState, oldState) {
+      if (oldState === CONNECTION_STATES.CONNECTING) {
+        if (newState === CONNECTION_STATES.ERROR) {
+          this.$q.notify({
+            type: 'negative',
+            position: 'top',
+            message: 'Erro ao tentar conectar ao endereço indicado'
+          })
+        } else if (newState === CONNECTION_STATES.CONNECTED) {
+          this.$router.push(
+            {
+              name: 'dashboard',
+              query: {
+                host: this.connection.host,
+                port: this.connection.port
+              }
+            }
+          )
+        }
+      }
+    }
+  }
+}
+</script>

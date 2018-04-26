@@ -1,14 +1,27 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import createPersistedState from 'vuex-persistedstate'
 
-import example from './module-example'
+import connection from './connection'
 
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
   modules: {
-    example
-  }
+    connection
+  },
+  plugins: [
+    createPersistedState({
+      reducer: (state) => {
+        return {
+          connection: {
+            host: state.connection.host,
+            port: state.connection.port
+          }
+        }
+      }
+    })
+  ]
 })
 
 export default store
