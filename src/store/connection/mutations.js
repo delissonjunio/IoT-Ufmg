@@ -1,8 +1,6 @@
-export const connectionData = (state, { host, port }) => {
+export const connectionData = (state, { host, port, listenerHost, listenerPort }) => {
   state.host = host
   state.port = port
-}
-
-export const connectionSocket = (state, socket) => {
-  state.socket = socket
+  state.listenerHost = listenerHost
+  state.listenerPort = listenerPort
 }

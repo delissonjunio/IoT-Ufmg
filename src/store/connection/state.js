@@ -1,5 +1,7 @@
 export default {
   host: '',
   port: '',
-  socket: null
+  listenerHost: '',
+  listenerPort: '',
+  connection: null
 }

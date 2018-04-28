@@ -18,10 +18,15 @@
         </q-btn-dropdown>
         <q-btn v-else color="warning" icon="block" @click="switchMode('')">Parar escaneamento passivo</q-btn>
 
-        <q-btn color="negative" @click="disconnectAndReturnToSetup">Desconectar</q-btn>
+        <q-btn v-if="isConnected" color="negative" @click="disconnect">Desconectar</q-btn>
+        <q-btn v-else color="primary" @click="refreshConnection">Conectar</q-btn>
 
         <q-btn v-if="systemLog.fileDestination" flat @click="systemLog.dialogVisible = true">Mostrar log</q-btn>
         <q-btn v-else flat @click="configureSystemLog">Configurar log</q-btn>
+
+        <div class="col float-right">
+          <q-btn color="negative" flat @click="disconnectAndReturnToSetup">Sair</q-btn>
+        </div>
 
         <q-list class="q-mt-md">
           <q-list-header>Configurações</q-list-header>
@@ -32,27 +37,53 @@
             <q-item-main>
               <q-slider :value="configuration.signalStrength"
                           @change="val => { configuration.signalStrength = val }"
-                        :min="0" :max="100" label color="grey"></q-slider>
+                        :min="170" :max="290" label color="grey"></q-slider>
             </q-item-main>
           </q-item>
           <q-item>
             <q-item-side icon="av_timer">
-              Leituras a efetuar
+              Modo de leitura
             </q-item-side>
             <q-item-main>
-              <q-slider :value="configuration.readTimeout"
-                        @change="val => { configuration.readTimeout = val }"
-                        :min="0" :max="10" label color="amber"></q-slider>
+              <q-btn-toggle
+                v-model="configuration.acquisitionMode"
+                flat
+                toggle-color="primary"
+                :options="[
+                  {label: 'Inventory (lento, lê todas as tags)', value: 'Inventory'},
+                  {label: 'Global Scroll (rápido, máximo 1 tag)', value: 'Global Scroll'}
+                ]" />
+            </q-item-main>
+          </q-item>
+          <q-item>
+            <q-item-side icon="av_timer">
+              Antenas ativas
+            </q-item-side>
+            <q-item-main>
+              <q-option-group
+                type="checkbox"
+                inline
+                v-model="configuration.antennas"
+                :options="[
+                  { label: '1', value: '0' },
+                  { label: '2', value: '1' },
+                ]"
+              />
             </q-item-main>
           </q-item>
           <q-item-separator></q-item-separator>
           <q-list-header>Estatísticas</q-list-header>
           <q-item>
             <q-item-side>
-              Leituras de sucesso por segundo
+              Leituras de sucesso
             </q-item-side>
             <q-item-main>
-              -
+              <template v-if="statistics.successReadsPerSecond">
+                {{ statistics.successReadsPerSecond }} / segundo
+              </template>
+              <template v-else>
+                &dash;
+              </template>
             </q-item-main>
           </q-item>
         </q-list>
@@ -100,15 +131,7 @@
 import _ from 'lodash'
 import { remote } from 'electron'
 import * as fs from 'fs'
-import { mapActions, mapState, mapGetters } from 'vuex'
-
-const SERVER_COMMANDS = {
-  ACTIVE_SCAN: () => 'ativo\n',
-  START_PASSIVE_SCAN: () => 'passivo\n',
-  STOP_PASSIVE_SCAN: () => 'pararpassivo\n',
-  CHANGE_SCAN_STRENGHT: (strength) => `potencia ${strength}\n`,
-  CHANGE_READ_TIMEOUT: (timeout) => `tempoleitura ${timeout}\n`
-}
+import { mapActions, mapState } from 'vuex'
 
 export default {
   data: () => ({
@@ -120,23 +143,17 @@ export default {
       fileDestination: '',
       content: ''
     },
-    communication: {
-      buffer: ''
+    statistics: {
+      successReadsPerSecond: 0
     },
     configuration: {
-      signalStrength: 50,
-      readTimeout: 3
+      signalStrength: 290,
+      readTimeout: 3,
+      acquisitionMode: 'Inventory',
+      antennas: ['0']
     },
     tagData: {
-      tags: [
-        // {
-        //   id: '53B688C7-EAD8-41B3-8197-BA1111C09A5D',
-        //   discoverTime: 159,
-        //   lastSeenAt: new Date() + '',
-        //   antenna: 0,
-        //   readQty: 5
-        // }
-      ],
+      tags: [],
       columns: [
         {
           name: 'id',
@@ -164,31 +181,22 @@ export default {
       })
 
       this.$router.replace({name: 'setup'})
-      return
     }
-
-    this.socket.write(SERVER_COMMANDS.CHANGE_SCAN_STRENGHT(this.configuration.signalStrength))
-    this.socket.write(SERVER_COMMANDS.CHANGE_READ_TIMEOUT(this.configuration.readTimeout))
-
-    this.socket.on('data', (data) => {
-      this.communication.buffer += String.fromCharCode.apply(null, data)
-      this.parseBuffer()
-    })
   },
   computed: {
     ...mapState('connection', [
-      'socket'
+      'connection'
     ]),
 
-    ...mapGetters('connection', [
-      'isConnected',
-      'socketExists'
-    ])
+    isConnected: function () {
+      return this.connection && this.connection.mainConnection
+    }
   },
   methods: {
     ...mapActions('connection', [
       'refreshConnection',
-      'disconnect'
+      'disconnect',
+      'disconnectAndRemoveData'
     ]),
 
     configureSystemLog: function () {
@@ -215,50 +223,28 @@ export default {
       this.systemLog.content += line
     },
 
-    parseBuffer: function () {
-      while (this.communication.buffer.indexOf('\n') >= 0) {
-        let messages = this.communication.buffer.split('\n')
-        let firstMessage = messages[0]
-        let leftoverMessages = messages.slice(1, messages.length)
-        this.communication.buffer = leftoverMessages.join('\n')
-
-        this.parseMessage(firstMessage.replace('\r', '').split(' '))
-      }
-    },
-
-    parseMessage: function (message) {
-      console.info('Mensagem recebida: ', message)
-      if (message[0] === 'tag') {
-        let [tag, discoverTime, lastSeen, antenna, readQty] = message.slice(-5)
-        if (this.mode === 'active') {
-          this.mode = ''
-          clearTimeout(this.activeTimeoutId)
-
-          this.addToSystemLog(`Tag ${tag} lida no modo ativo`)
+    gotAutonomousModeTags: function (tags) {
+      for (let newTag of tags) {
+        let existingTag = this.tagData.tags.find(t => t.id === newTag.tag)
+        if (existingTag) {
+          existingTag.lastSeenAt = newTag.last
+          existingTag.antenna = newTag.ant
+          existingTag.readQty += parseInt(newTag.count)
+        } else {
+          this.tagData.tags.push({
+            id: newTag.tag || '?',
+            discoverTime: newTag.disc,
+            lastSeenAt: newTag.last,
+            antenna: newTag.ant,
+            readQty: parseInt(newTag.count)
+          })
         }
-
-        this.tagData.tags.push({
-          id: tag,
-          discoverTime,
-          lastSeen,
-          antenna,
-          readQty
-        })
       }
     },
 
     disconnectAndReturnToSetup: async function () {
       await this.disconnect()
       this.$router.replace({name: 'setup'})
-    },
-
-    generateRandomTagData: function () {
-      return '0.yy m | 1.yy ms | xxxx-xxxx-xxxx-xxxx'.replace(/[xy]/g, (c) => {
-        let r = Math.random() * 16 | 0
-        let t = Math.round(Math.random() * 9)
-        let v = c === 'x' ? r : t
-        return v.toString(16).toUpperCase()
-      })
     },
 
     removeSelectedTags: function () {
@@ -269,54 +255,68 @@ export default {
       this.tagData.selected = []
     },
 
-    switchMode: function (newMode) {
+    switchMode: async function (newMode) {
       const previousMode = this.mode
       this.mode = newMode
 
       if (this.mode === 'passive') {
         this.addToSystemLog(`Entrando no modo passivo`)
-        this.socket.write(SERVER_COMMANDS.START_PASSIVE_SCAN())
+
+        let lastReadTime = new Date().getTime()
+        let lastTotal = 0
+
+        this.connection.startTagStream(tags => {
+          let currentReadTime = new Date().getTime()
+          lastTotal += tags.map(t => parseInt(t.count)).reduce((a, b) => a + b, 0)
+          let howLongItTookToReadThese = currentReadTime - lastReadTime
+          if (howLongItTookToReadThese > 1000) {
+            this.statistics.successReadsPerSecond = Math.round((lastTotal / howLongItTookToReadThese) * 1000)
+
+            lastReadTime = currentReadTime
+            lastTotal = 0
+          }
+
+          this.gotAutonomousModeTags(tags)
+        })
       } else {
         if (previousMode === 'passive') {
           this.addToSystemLog(`Saindo do modo passivo`)
-          this.socket.write(SERVER_COMMANDS.STOP_PASSIVE_SCAN())
+          this.connection.stopTagStream()
         }
       }
 
       if (this.mode === 'active') {
         this.addToSystemLog(`Entrando no modo ativo`)
-        this.socket.write(SERVER_COMMANDS.ACTIVE_SCAN())
-        this.activeTimeoutId = setTimeout(() => {
-          this.switchMode('')
-          this.addToSystemLog(`Saindo do modo ativo: nenhuma tag retornada`)
-          this.$q.notify({
-            type: 'warning',
-            position: 'top',
-            message: 'Nenhuma tag recebida do leitor'
-          })
-        }, this.configuration.readTimeout * 1000)
+        let startTime = new Date().getTime()
+        let tags = await this.connection.getTagList()
+        let totalElapsedTime = new Date().getTime() - startTime
+        let totalReadQty = tags.map(t => parseInt(t.count)).reduce((a, b) => a + b, 0)
+
+        this.statistics.successReadsPerSecond = Math.round((totalReadQty / totalElapsedTime) * 1000)
+        this.gotAutonomousModeTags(tags)
+
+        this.switchMode('')
+        this.addToSystemLog(`Entrando no modo ativo: ${tags.length} tags lidas`)
       }
     }
   },
   watch: {
-    isConnected: function (val) {
-      if (!val && this.socketExists) {
-        this.$q.notify({
-          type: 'negative',
-          position: 'top',
-          message: 'Conexão ao servidor perdida'
-        })
-
-        this.$router.replace({ name: 'setup' })
+    'configuration.signalStrength': function (val) {
+      if (this.isConnected) {
+        this.connection.setRfPowerLevel(val)
       }
     },
 
-    'configuration.signalStrength': function (val) {
-      this.socket.write(SERVER_COMMANDS.CHANGE_SCAN_STRENGHT(val))
+    'configuration.acquisitionMode': function (val) {
+      if (this.isConnected) {
+        this.connection.setAcquisitionMode(val)
+      }
     },
 
-    'configuration.readTimeout': function (val) {
-      this.socket.write(SERVER_COMMANDS.CHANGE_READ_TIMEOUT(val))
+    'configuration.antennas': function (val) {
+      if (this.isConnected) {
+        this.connection.setAntennas(val.join(' '))
+      }
     }
   }
 }

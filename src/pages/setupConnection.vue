@@ -26,11 +26,11 @@
             <q-item>
               <q-item-main>
                 <q-item-tile>
-                  <q-field helper="IP ou hostname, ex: '1.2.3.4' ou 'maquina1.local'">
+                  <q-field helper="Padrão: '150.164.10.41'">
                     <q-input
                       @keyup.enter="tryToConnect"
                       v-model="connection.host"
-                      float-label="Endereço do servidor">
+                      float-label="Endereço do leitor">
                     </q-input>
                   </q-field>
                 </q-item-tile>
@@ -43,7 +43,37 @@
                     <q-input
                       @keyup.enter="tryToConnect"
                       v-model="connection.port"
-                      float-label="Porta a ser utilizada">
+                      float-label="Porta do leitor">
+                    </q-input>
+                  </q-field>
+                </q-item-tile>
+              </q-item-main>
+            </q-item>
+
+            <q-item-separator />
+
+            <q-list-header>Modo passivo</q-list-header>
+            <q-item>
+              <q-item-main>
+                <q-item-tile>
+                  <q-field helper="Padrão: '150.164.0.242'">
+                    <q-input
+                      @keyup.enter="tryToConnect"
+                      v-model="connection.listenerHost"
+                      float-label="Endereço da máquina a receber dados autônomos">
+                    </q-input>
+                  </q-field>
+                </q-item-tile>
+              </q-item-main>
+            </q-item>
+            <q-item>
+              <q-item-main>
+                <q-item-tile>
+                  <q-field helper="Padrão: '4000'">
+                    <q-input
+                      @keyup.enter="tryToConnect"
+                      v-model="connection.listenerPort"
+                      float-label="Porta para dados autônomos">
                     </q-input>
                   </q-field>
                 </q-item-tile>
@@ -72,8 +102,9 @@
 
 <script>
 import { mapActions } from 'vuex'
+const dgram = require('dgram')
 
-const DEFAULT_PORT = 5678
+const DEFAULT_PORT = 23
 
 const CONNECTION_STATES = {
   IDLE: 0,
@@ -87,11 +118,16 @@ export default {
     CONNECTION_STATES,
     DEFAULT_PORT,
     connection: {
-      host: '',
+      host: '150.164.10.41',
       port: DEFAULT_PORT + '',
+      listenerPort: '4000',
+      listenerHost: '150.164.0.242',
       state: CONNECTION_STATES.IDLE
     }
   }),
+  mounted: function () {
+    this.startAutoDiscovery()
+  },
   methods: {
     ...mapActions('connection', [
       'connect'
@@ -100,11 +136,34 @@ export default {
     tryToConnect: async function () {
       this.connection.state = CONNECTION_STATES.CONNECTING
       try {
-        await this.connect({ host: this.connection.host, port: this.connection.port })
+        await this.connect({
+          host: this.connection.host,
+          port: this.connection.port,
+          listener: {
+            host: this.connection.listenerHost,
+            port: this.connection.listenerPort
+          }
+        })
         this.connection.state = CONNECTION_STATES.CONNECTED
       } catch (e) {
         this.connection.state = CONNECTION_STATES.ERROR
       }
+    },
+
+    startAutoDiscovery: async function () {
+      const server = dgram.createSocket('udp4')
+
+      server.on('message', (msg, rinfo) => {
+        debugger
+        console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`)
+      })
+
+      server.on('listening', () => {
+        const address = server.address()
+        console.log(`server listening ${address.address}:${address.port}`)
+      })
+
+      server.bind(3988, '0.0.0.0')
     }
   },
   watch: {

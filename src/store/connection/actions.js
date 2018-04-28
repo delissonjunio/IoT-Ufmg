@@ -1,72 +1,58 @@
-import * as net from 'net'
+const AlienRfidReader = require('../../../alien-rfid-js/reader')
 
-const CONNECTION_TIMEOUT = 5000
+export const connect = async ({ commit, dispatch, state }, { host, port, listener }) => {
+  window.localStorage.setItem('debug', '*')
+  window.localStorage.setItem('DEBUG', '*')
 
-export const connect = async ({ commit, dispatch, state }, { host, port }) => {
   commit('connectionData', {
     port,
-    host
+    host,
+    listenerHost: listener.host,
+    listenerPort: listener.port
   })
-  commit('connectionSocket', null)
 
   try {
     await dispatch('refreshConnection')
   } catch (e) {
-    commit('connectionData', {
-      port: '',
-      host: ''
-    })
-    commit('connectionSocket', null)
+    await dispatch('disconnect')
 
     throw e
   }
 }
 
-export const disconnect = async ({ commit }) => {
-  commit('connectionData', {
-    port: '',
-    host: ''
-  })
-  commit('connectionSocket', null)
+export const disconnect = async ({ commit, state }) => {
+  if (state.connection) {
+    await state.connection.disconnect()
+    state.connection = null
+  }
 }
 
-export const refreshConnection = ({ commit, state }) => {
-  return new Promise((resolve, reject) => {
-    if (!state.socket) {
-      let timeoutTimerId
+export const disconnectAndRemoveData = async ({ commit, dispatch }) => {
+  dispatch('disconnect')
+  commit('connectionData', {
+    port: '',
+    host: '',
+    listenerHost: '',
+    listenerPort: ''
+  })
+}
 
-      try {
-        let client = net.connect(state.port, state.host, () => {
-          clearTimeout(timeoutTimerId)
+export const refreshConnection = async ({ commit, state }) => {
+  if (state.connection) {
+    return
+  }
 
-          commit('connectionData', {
-            port: state.port,
-            host: state.host
-          })
-          commit('connectionSocket', client)
-
-          resolve(client)
-        })
-
-        client.on('close', (hadError) => {
-          console.error('socket closed: ', hadError)
-          clearTimeout(timeoutTimerId)
-
-          reject(hadError)
-        })
-
-        timeoutTimerId = setTimeout(() => {
-          console.error('connect timeout')
-          client.destroy()
-          reject(CONNECTION_TIMEOUT)
-        }, CONNECTION_TIMEOUT)
-      } catch (e) {
-        console.error(e)
-        clearTimeout(timeoutTimerId)
-        reject(e)
-      }
-    } else {
-      resolve(state.socket)
+  let reader = new AlienRfidReader({
+    host: state.host,
+    port: state.port,
+    username: 'alien',
+    password: 'password',
+    listener: {
+      host: state.listenerHost,
+      port: state.listenerPort
     }
   })
+
+  await reader.connect()
+  state.connection = reader
 }

@@ -16,7 +16,9 @@ const store = new Vuex.Store({
         return {
           connection: {
             host: state.connection.host,
-            port: state.connection.port
+            port: state.connection.port,
+            listenerHost: state.connection.listenerHost,
+            listenerPort: state.connection.listenerPort
           }
         }
       }
