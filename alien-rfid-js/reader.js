@@ -1,4 +1,5 @@
 const net = require('net')
+const Promise = require('bluebird')
 const Telnet = require('telnet-client')
 const debug = require('debug')('alien-rfid-reader')
 
@@ -28,7 +29,7 @@ class AlienRfidReader {
     debug(`Connecting to reader at ${host}:${port}`)
 
     this.mainConnection = new Telnet()
-    await this.mainConnection.connect({
+    this.mainConnection.connect({
       host,
       port,
       username: this.options.username,
@@ -40,7 +41,45 @@ class AlienRfidReader {
       debug: true
     })
 
-    debug(`Connected!`)
+    return new Promise((resolve, reject) => {
+      let fulfilled = false
+
+      this.mainConnection.on('ready', (prompt) => {
+        debug(`Connection ready`)
+
+        if (!fulfilled) {
+          resolve()
+          fulfilled = true
+        }
+      })
+
+      this.mainConnection.on('timeout', () => {
+        debug('Socket timeout!')
+
+        if (!fulfilled) {
+          reject(new Error('socket timeout'))
+          fulfilled = true
+        }
+      })
+
+      this.mainConnection.on('close', () => {
+        debug('Connection closed')
+
+        if (!fulfilled) {
+          reject(new Error('connection closed'))
+          fulfilled = true
+        }
+      })
+
+      this.mainConnection.on('error', (err) => {
+        debug('Connection error: ', err)
+
+        if (!fulfilled) {
+          reject(new Error('connection error'))
+          fulfilled = true
+        }
+      })
+    })
   }
 
   async getTagList (multiplier) {
@@ -48,13 +87,17 @@ class AlienRfidReader {
       multiplier = 1
     }
 
-    await this.runCommand('set tagListFormat=Text')
+    await this.setTagListFormatWithSpeed()
+    await this.runCommand('set tagListFormat=Custom')
+
     let response = await this.runCommand('get taglist ' + multiplier)
     await this.runCommand('set tagListFormat=XML')
 
     if (response === '(No Tags)') {
       return []
     }
+
+    debug('Got taglist: ', response)
 
     return response.split('\r\n').map(AlienRfidReader._parseTagLine)
   }
@@ -69,6 +112,24 @@ class AlienRfidReader {
 
   async setAntennas (antennas) {
     return this.runCommand('set antennaSequence=' + antennas)
+  }
+
+  async setTagListFormat (format) {
+    return this.runCommand('set tagListCustomFormat=' + format)
+  }
+
+  async setTagStreamFormat (format) {
+    return this.runCommand('set tagStreamCustomFormat=' + format)
+  }
+
+  async resetTagListFormat (format) {
+    await this.setTagListFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p')
+    await this.setTagStreamFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p')
+  }
+
+  async setTagListFormatWithSpeed () {
+    await this.setTagListFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s')
+    await this.setTagStreamFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s')
   }
 
   static _parseListenerMessage (message, callback) {
@@ -99,6 +160,8 @@ class AlienRfidReader {
 
   async stopTagStream () {
     await this.runCommand('set tagStreamMode=OFF')
+    await this.runCommand('set tagListFormat=XML')
+    await this.runCommand('set tagStreamFormat=XML')
 
     if (this.listenerSocket) {
       await new Promise(resolve => this.listenerSocket.close(resolve))
@@ -138,11 +201,11 @@ class AlienRfidReader {
       port: this.options.listener.port
     })
 
-    await this.runCommand('set tagListFormat=Text')
+    await this.runCommand('set tagListFormat=Custom')
+    await this.setTagListFormatWithSpeed()
     await this.runCommand('set tagStreamAddress=' + this.options.listener.host + ':' + this.options.listener.port)
     await this.runCommand('set streamHeader=OFF')
     await this.runCommand('set tagStreamMode=ON')
-    // await this.runCommand('set autoMode=ON')
   }
 
   async startAutonomousMode (callback) {

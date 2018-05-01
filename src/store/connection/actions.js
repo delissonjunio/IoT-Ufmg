@@ -1,8 +1,8 @@
 const AlienRfidReader = require('../../../alien-rfid-js/reader')
 
 export const connect = async ({ commit, dispatch, state }, { host, port, listener }) => {
-  window.localStorage.setItem('debug', '*')
-  window.localStorage.setItem('DEBUG', '*')
+  window.localStorage.setItem('debug', 'alien-rfid-reader')
+  window.localStorage.setItem('DEBUG', 'alien-rfid-reader')
 
   commit('connectionData', {
     port,
