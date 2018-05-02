@@ -1,0 +1,63 @@
+Tue May 01 2018 18:34:34 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:34 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104737.081","last":"1970/03/28 104737.176","count":"8","ant":"0","proto":"2","speed":"-0.116","rssi":" 2177.7","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:34 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 68 tags/segundo
+Tue May 01 2018 18:34:36 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:36 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104739.042","last":"1970/03/28 104739.112","count":"6","ant":"0","proto":"2","speed":"0.030","rssi":" 1375.9","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:36 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 65 tags/segundo
+Tue May 01 2018 18:34:37 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:37 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104740.464","last":"1970/03/28 104740.557","count":"8","ant":"0","proto":"2","speed":"0.048","rssi":" 2338.2","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:37 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 62 tags/segundo
+Tue May 01 2018 18:34:38 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:39 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104741.854","last":"1970/03/28 104741.972","count":"9","ant":"0","proto":"2","speed":"0.451","rssi":" 1110.7","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:39 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 64 tags/segundo
+Tue May 01 2018 18:34:40 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:40 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104743.347","last":"1970/03/28 104743.451","count":"8","ant":"0","proto":"2","speed":"0.258","rssi":" 1091.4","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:40 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 62 tags/segundo
+Tue May 01 2018 18:34:42 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:42 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:34:43 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:43 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104746.304","last":"1970/03/28 104746.361","count":"5","ant":"0","proto":"2","speed":"0.207","rssi":" 661.8","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:43 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 62 tags/segundo
+Tue May 01 2018 18:34:44 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:45 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104747.714","last":"1970/03/28 104747.796","count":"6","ant":"0","proto":"2","speed":"0.127","rssi":" 1024.5","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:45 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 57 tags/segundo
+Tue May 01 2018 18:34:46 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:46 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104749.158","last":"1970/03/28 104749.158","count":"1","ant":"0","proto":"2","speed":"0.137","rssi":" 370.3","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:46 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 24 tags/segundo
+Tue May 01 2018 18:34:47 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:47 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:34:49 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:49 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104752.174","last":"1970/03/28 104752.268","count":"7","ant":"0","proto":"2","speed":"0.193","rssi":" 390.1","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:49 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 60 tags/segundo
+Tue May 01 2018 18:34:50 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:50 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:34:52 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:52 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:34:53 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:53 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:34:54 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:55 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104757.813","last":"1970/03/28 104757.871","count":"5","ant":"0","proto":"2","speed":"0.299","rssi":" 619.2","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:55 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 62 tags/segundo
+Tue May 01 2018 18:34:56 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:56 GMT-0300 (-03) Tag recebida: {"epc":"E200 3412 DC03 0118 2801 3347","disc":"1970/03/28 104759.164","last":"1970/03/28 104759.232","count":"6","ant":"0","proto":"2","speed":"0.185","rssi":" 463.3","tag":"E200 3412 DC03 0118 2801 3347"}
+Tue May 01 2018 18:34:56 GMT-0300 (-03) Saindo do modo ativo: 1 tags lidas, com taxa de 64 tags/segundo
+Tue May 01 2018 18:34:58 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:58 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:34:59 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:34:59 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:01 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:01 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:03 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:03 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:04 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:04 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:06 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:06 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:07 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:08 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:09 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:09 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:11 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:11 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
+Tue May 01 2018 18:35:12 GMT-0300 (-03) Entrando no modo ativo
+Tue May 01 2018 18:35:12 GMT-0300 (-03) Saindo do modo ativo: 0 tags lidas, com taxa de 0 tags/segundo
