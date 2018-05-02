@@ -118,10 +118,10 @@ export default {
     CONNECTION_STATES,
     DEFAULT_PORT,
     connection: {
-      host: '150.164.10.41',
+      host: '150.164.10.42',
       port: DEFAULT_PORT + '',
       listenerPort: '4000',
-      listenerHost: '150.164.0.242',
+      listenerHost: '150.164.200.99',
       state: CONNECTION_STATES.IDLE
     }
   }),

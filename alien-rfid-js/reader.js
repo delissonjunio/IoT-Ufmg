@@ -3,8 +3,8 @@ const Promise = require('bluebird')
 const Telnet = require('telnet-client')
 const debug = require('debug')('alien-rfid-reader')
 
-const START_NOTIFICATION_HEADER = '#Alien RFID Reader Auto Notification Message'
-const END_NOTIFICATION_HEADER = '#End of Notification Message'
+// const START_NOTIFICATION_HEADER = '#Alien RFID Reader Auto Notification Message'
+// const END_NOTIFICATION_HEADER = '#End of Notification Message'
 
 class AlienRfidReader {
   constructor (options) {
@@ -128,8 +128,8 @@ class AlienRfidReader {
   }
 
   async setTagListFormatWithSpeed () {
-    await this.setTagListFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s')
-    await this.setTagStreamFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s')
+    await this.setTagListFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s, RSSI: %m')
+    await this.setTagStreamFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s, RSSI: %m')
   }
 
   static _parseListenerMessage (message, callback) {
@@ -201,6 +201,8 @@ class AlienRfidReader {
       port: this.options.listener.port
     })
 
+    debug('Listening on ' + this.options.listener.host + ':' + this.options.listener.port)
+
     await this.runCommand('set tagListFormat=Custom')
     await this.setTagListFormatWithSpeed()
     await this.runCommand('set tagStreamAddress=' + this.options.listener.host + ':' + this.options.listener.port)
@@ -208,44 +210,46 @@ class AlienRfidReader {
     await this.runCommand('set tagStreamMode=ON')
   }
 
+  async getTimer () {
+    let result = await this.runCommand('get timer')
+    let lines = result.split('\r\n').filter(l => l[0] !== '#')
+
+    let data = {}
+    lines.forEach(line => {
+      let fields = line.split('   ')
+      fields.forEach(field => {
+        let [fieldName, fieldValue] = field.split('=')
+        fieldName = fieldName.replace(' ', '_').replace('\t', '_').replace('/', '_').toLowerCase()
+        data[fieldName] = fieldValue
+      })
+    })
+
+    return data
+  }
+
   async startAutonomousMode (callback) {
-    this.listenerSocket = net.createServer(c => {
-      debug('Reader connected to listener!')
+    await this.runCommand('set autoMode=OFF')
+    await this.runCommand('set NotifyMode=OFF')
+    await this.setTagListFormat('EPC:%i, Disc:%d %t, Last:%D %T, Count:%r, Ant:%a, Proto:%p, Speed:%s, RSSI: %m')
+    await this.runCommand('set acquireMode=Global Scroll')
+    await this.runCommand('set AcqG2Cycles=1')
+    await this.runCommand('Set AcqG2Count=10')
+    await this.runCommand('set AcqG2Q = 0')
+    await this.runCommand('set TagListAntennaCombine=OFF')
+    await this.runCommand('set RFModulation = HS')
+    await this.runCommand('set AntennaSequence=0')
+    await this.runCommand('set TagType=16')
+    await this.runCommand('clear taglist')
+    await this.runCommand('set tagListFormat=Custom')
 
-      c.on('end', () => {
-        debug('Reader disconnected from listener!')
-      })
+    while (true) {
+      let response = await this.runCommand('get taglist 1')
+      if (response !== '(No Tags)') {
+        callback(response.split('\r\n').map(AlienRfidReader._parseTagLine))
+      }
 
-      let buffer = ''
-      c.on('data', (data) => {
-        buffer += data.toString()
-
-        let startNotificationIndex = buffer.indexOf(START_NOTIFICATION_HEADER)
-        let endNotificationIndex = buffer.indexOf(END_NOTIFICATION_HEADER)
-
-        if (startNotificationIndex >= 0 && endNotificationIndex >= 0) {
-          let messageStartIndex = startNotificationIndex + START_NOTIFICATION_HEADER.length
-          let message = buffer.substring(messageStartIndex, endNotificationIndex)
-          buffer = buffer.substring(endNotificationIndex + END_NOTIFICATION_HEADER.length)
-
-          AlienRfidReader._parseListenerMessage(message, callback)
-        }
-      })
-    })
-
-    this.listenerSocket.listen({
-      host: this.options.listener.host,
-      port: this.options.listener.port
-    })
-
-    await this.runCommand('set tagListFormat=Text')
-    await this.runCommand('set notifyAddress=' + this.options.listener.host + ':' + this.options.listener.port)
-    await this.runCommand('set notifyTrigger=TrueFalse')
-    await this.runCommand('set notifyMode=ON')
-    await this.runCommand('set notifyFormat=Text')
-    await this.runCommand('autoModeReset')
-    await this.runCommand('set autoStopTimer=1000')
-    await this.runCommand('set autoMode=ON')
+      // debug('Got taglist: ', response)
+    }
   }
 
   async runCommand (command) {

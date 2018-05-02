@@ -164,7 +164,9 @@ export default {
         },
         { name: 'discover_time', label: 'Tempo de descoberta', field: 'discoverTime', sortable: true },
         { name: 'last_seen', label: 'Lido por último em', field: 'lastSeenAt', sortable: true },
-        { name: 'antenna', label: 'Antena', field: 'antenna' },
+        // { name: 'antenna', label: 'Antena', field: 'antenna' },
+        { name: 'rssi', label: 'RSSI', field: 'rssi' },
+        { name: 'speed', label: 'Velocidade', field: 'speed' },
         { name: 'read_qty', label: 'Qtd de leituras', field: 'readQty', sortable: true }
       ],
       selected: []
@@ -206,6 +208,7 @@ export default {
         ]
       }, (filename) => {
         if (filename) {
+          console.log('log: ' + filename)
           this.systemLog.fileDestination = filename
           fs.appendFile(filename, this.systemLog.content, 'utf-8')
         }
@@ -230,15 +233,22 @@ export default {
           existingTag.lastSeenAt = newTag.last
           existingTag.antenna = newTag.ant
           existingTag.readQty += parseInt(newTag.count)
+          existingTag.rssi = newTag.rssi
+          existingTag.speed = newTag.speed
         } else {
           this.tagData.tags.push({
             id: newTag.tag || '?',
             discoverTime: newTag.disc,
             lastSeenAt: newTag.last,
             antenna: newTag.ant,
-            readQty: parseInt(newTag.count)
+            readQty: parseInt(newTag.count),
+            rssi: newTag.rssi,
+            speed: newTag.speed
           })
         }
+
+        console.info(newTag)
+        this.addToSystemLog(`Tag recebida: ${JSON.stringify(newTag)}`)
       }
     },
 
@@ -287,16 +297,14 @@ export default {
 
       if (this.mode === 'active') {
         this.addToSystemLog(`Entrando no modo ativo`)
-        let startTime = new Date().getTime()
         let tags = await this.connection.getTagList()
-        let totalElapsedTime = new Date().getTime() - startTime
-        let totalReadQty = tags.map(t => parseInt(t.count)).reduce((a, b) => a + b, 0)
+        let timer = await this.connection.getTimer()
 
-        this.statistics.successReadsPerSecond = Math.round((totalReadQty / totalElapsedTime) * 1000)
+        this.statistics.successReadsPerSecond = timer['reads_sec']
         this.gotAutonomousModeTags(tags)
 
         this.switchMode('')
-        this.addToSystemLog(`Entrando no modo ativo: ${tags.length} tags lidas`)
+        this.addToSystemLog(`Saindo do modo ativo: ${tags.length} tags lidas, com taxa de ${this.statistics.successReadsPerSecond} tags/segundo`)
       }
     }
   },
